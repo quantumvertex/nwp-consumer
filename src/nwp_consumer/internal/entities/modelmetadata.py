@@ -143,8 +143,8 @@ class ModelMetadata:
                 return (
                     self.expected_coordinates.crop(
                         north=72,
-                        west=-12,
-                        south=35,
+                        west=-14,
+                        south=34,
                         east=33,
                     )
                     .map(
@@ -274,7 +274,7 @@ class Models:
         resolution="0.1 degrees",
         expected_coordinates=NWPDimensionCoordinateMap(
             init_time=[],
-            step=list(range(1, 5, 1)),
+            step=list(range(0, 91, 1)),
             variable=[
                 Parameter.WIND_U_COMPONENT_10m,
                 Parameter.WIND_V_COMPONENT_10m,

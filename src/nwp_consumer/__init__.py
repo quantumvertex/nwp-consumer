@@ -130,16 +130,17 @@ if sys.stdout.isatty():
     # Simple logging for terminals
     _formatstr="%(levelname)s [%(name)s] | %(message)s"
 else:
+    _formatstr="%(levelname)s [%(name)s] | %(message)s"
     # JSON logging for containers
-    _formatstr="".join((
-        "{",
-        '"message": "%(message)s", ',
-        '"severity": "%(levelname)s", "timestamp": "%(asctime)s.%(msecs)03dZ", ',
-        '"logging.googleapis.com/labels": {"python_logger": "%(name)s"}, ',
-        '"logging.googleapis.com/sourceLocation": ',
-        '{"file": "%(filename)s", "line": %(lineno)d, "function": "%(funcName)s"}',
-        "}",
-    ))
+    # _formatstr="".join((
+    #     "{",
+    #     '"message": "%(message)s", ',
+    #     '"severity": "%(levelname)s", "timestamp": "%(asctime)s.%(msecs)03dZ", ',
+    #     '"logging.googleapis.com/labels": {"python_logger": "%(name)s"}, ',
+    #     '"logging.googleapis.com/sourceLocation": ',
+    #     '{"file": "%(filename)s", "line": %(lineno)d, "function": "%(funcName)s"}',
+    #     "}",
+    # ))
 
 _loglevel: int | str = logging.getLevelName(os.getenv("LOGLEVEL", "INFO").upper())
 logging.basicConfig(

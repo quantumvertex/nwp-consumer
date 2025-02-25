@@ -332,6 +332,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         Args:
             path: The path to the file to convert.
         """
+        log.debug("Converting to xarray '%s'", path.as_posix())
         try:
             dss: list[xr.Dataset] = cfgrib.open_datasets(
                 path=path.as_posix(),

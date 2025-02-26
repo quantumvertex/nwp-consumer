@@ -349,6 +349,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             )
 
         processed_das: list[xr.DataArray] = []
+        log.debug("Converting: merge xarray chunks")
         try:
             # Merge the datasets back into one
             ds: xr.Dataset = xr.merge(
@@ -361,6 +362,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             # Add in missing coordinates for mean/std data
             # * I don't really like basing this off the file name
             # * TODO: Find a better way
+            log.debug("Converting: add missing coordinates for '%s'", path.name)
             if "enfo-es" in path.name:
                 ds = ds.expand_dims(dim={"ensemble_stat": ["std"]})
             elif "enfo-em" in path.name:

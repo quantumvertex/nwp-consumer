@@ -394,12 +394,14 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             # Put each variable into its own DataArray:
             # * Each raw file does not contain a full set of parameters
             # * and so may not produce a contiguous subset of the expected coordinates.
+            log.debug("Converting: reorgoanise variables in dataarray")
             processed_das.extend(
                 [
                     da.where(cond=da.coords["variable"] == v, drop=True)
                     for v in da.coords["variable"].values
                 ],
             )
+            log.debug("Converting complete")
 
         except Exception as e:
             return Failure(

@@ -213,7 +213,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             is_order_based=False,
             running_hours=[0, 12],
             delay_minutes=(60 * 26),  # 1 day, plus leeway
-            max_connections=20,
+            max_connections=2,
             required_env=[
                 "ECMWF_API_KEY",
                 "ECMWF_API_EMAIL",

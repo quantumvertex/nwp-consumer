@@ -13,7 +13,6 @@ import datetime as dt
 import inspect
 import logging
 import os
-import psutil
 import pathlib
 from collections.abc import Callable, Iterator
 from typing import override
@@ -43,12 +42,6 @@ def _mars_logger(msg: str) -> None:
     if any(map(msg.__contains__, errorSubstrings)):
         log.warning("[MARS] %s", msg)
 
-
-def log_memory_usage(label):
-    # Get memory info
-    process = psutil.Process()
-    mem_info = process.memory_info()
-    log.info(f"Memory usage at {label}: {mem_info.rss / (1024 ** 2):.2f} MB")
 
 @dataclasses.dataclass
 class _MARSRequest:
@@ -341,13 +334,11 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         """
         log.debug("Converting to xarray '%s'", path.as_posix())
         try:
-            log_memory_usage("Before open_datasets")
             dss: list[xr.Dataset] = cfgrib.open_datasets(
                 path=path.as_posix(),
                 chunks={"time": 1, "step": -1, "longitude": "auto", "latitude": "auto"},
                 backend_kwargs={"indexpath": ""},
             )
-            log_memory_usage("After open_datasets")
         except Exception as e:
             return Failure(
                 OSError(

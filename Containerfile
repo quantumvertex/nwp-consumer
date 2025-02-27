@@ -3,78 +3,78 @@
 
 # # --- Base Python image ---------------------------------------------------------------
 # FROM python:3.12-bookworm AS python-base
-# 
+#
 # --- Builder image creation -------------------------------------------------------------
 # FROM python-base AS builder
-# 
+#
 # Setup non-root user
 # ARG USER=monty
 # RUN groupadd ${USER} && useradd -m ${USER} -g ${USER}
 # USER ${USER}
 # ENV PATH="/home/${USER}/.local/bin:${PATH}"
-# 
+#
 # WORKDIR /home/${USER}
-# 
+#
 # Don't generate .pyc, enable tracebacks
 # ENV LANG=C.UTF-8 \
 #     LC_ALL=C.UTF-8 \
 #     PYTHONDONTWRITEBYTECODE=1 \
 #     PYTHONFAULTHANDLER=1
-# 
+#
 # # COPY --from=ghcr.io/astral-sh/uv:python3.12-bookworm --chown=1000:1000 /usr/local/bin/uv /home/${USER}/.local/bin/uv
 # COPY --from=ghcr.io/astral-sh/uv:python3.12-bookworm /usr/local/bin/uv /usr/local/bin/uv
-# 
+#
 # RUN uv --version
-# 
+#
 # # --- Distroless Container creation -----------------------------------------------------
 # FROM gcr.io/distroless/cc-debian12 AS python-distroless
-# 
+#
 # ARG CHIPSET_ARCH=aarch64-linux-gnu
-# 
+#
 # # Copy the python installation from the base image
 # COPY --from=python-base /usr/local/lib/ /usr/local/lib/
 # COPY --from=python-base /usr/local/bin/python /usr/local/bin/python
 # COPY --from=python-base /etc/ld.so.cache /etc/ld.so.cache
-# 
+#
 # # Add common compiled libraries
 # COPY --from=python-base /usr/lib/${CHIPSET_ARCH}/libz.so.1 /usr/lib/${CHIPSET_ARCH}/
 # COPY --from=python-base /usr/lib/${CHIPSET_ARCH}/libffi* /usr/lib/${CHIPSET_ARCH}/
 # # COPY --from=python-base /usr/lib/${CHIPSET_ARCH}/libbz2.so.1.0 /usr/lib/${CHIPSET_ARCH}/
 # # COPY --from=python-base /lib/${CHIPSET_ARCH}/libm.so.6 /lib/${CHIPSET_ARCH}/
 # COPY --from=python-base /usr/lib/${CHIPSET_ARCH}/libc.so.6 /usr/lib/${CHIPSET_ARCH}/
-# 
+#
 # Create non root user
 # ARG USER=monty
 # COPY --from=python-base /bin/echo /bin/echo
 # COPY --from=python-base /bin/rm /bin/rm
 # COPY --from=python-base /bin/sh /bin/sh
-# 
+#
 # RUN echo "${USER}:x:1000:${USER}" >> /etc/group
 # RUN echo "${USER}:x:1001:" >> /etc/group
 # RUN echo "${USER}:x:1000:1001::/home/${USER}:" >> /etc/passwd
-# 
+#
 # Check python installation works
 # RUN python --version
 # RUN rm /bin/sh /bin/echo /bin/rm
-# 
+#
 # Don't generate .pyc, enable tracebacks
 # ENV LANG=C.UTF-8 \
 #     LC_ALL=C.UTF-8 \
 #     PYTHONDONTWRITEBYTECODE=1 \
 #     PYTHONFAULTHANDLER=1
-# 
+#
 # # --- Build the application -------------------------------------------------------------
 # FROM builder AS build-app
-# 
+#
 # WORKDIR /app
-# 
+#
 # # Install dependencies using system python
 # ENV UV_LINK_MODE=copy \
 #     UV_COMPILE_BYTECODE=1 \
 #     UV_PYTHON_DOWNLOADS=never \
 #     UV_NO_CACHE=1 \
 #     CFLAGS="-g0 -Wl,--strip-all"
-# 
+#
 # # Synchronize DEPENDENCIES without the application itself.
 # # This layer is cached until pyproject.toml changes.
 # # Delete any unwanted parts of the installed packages to reduce size
@@ -85,23 +85,23 @@
 #     # echo "Optimizing site-packages" && \
 #     # rm -r .venv/.local/lib/python3.12/site-packages/**/tests && \
 #     # du -h .venv/.local/lib/python3.12/site-packages | sort -h | tail -n 4
-# 
+#
 # COPY . .
-# 
+#
 # RUN python -m eccodes selfcheck
-# 
+#
 # # --- Distroless App image --------------------------------------------------------------
 # FROM python-distroless
-# 
+#
 # COPY --from=build-app /usr/local /usr/local
-# 
+#
 # ENV RAWDIR=/work/raw \
 #     ZARRDIR=/work/data
-# 
+#
 # ENTRYPOINT ["nwp-consumer-cli"]
 # VOLUME /work
 # STOPSIGNAL SIGINT
- 
+
 
 # WORKING CONTAINERFILE
 
@@ -146,7 +146,9 @@ COPY --from=build-venv /venv /venv
 
 ENV RAWDIR=/work/raw \
     ZARRDIR=/work/data \
-    ECCODES_DEFINITION_PATH=/venv/share/eccodes/definitions
+    ECCODES_DEFINITION_PATH=/venv/share/eccodes/definitions \
+    LD_LIBRARY_PATH=/venv/lib:/venv/lib/python3.12/site-packages \
+    LD_PRELOAD=/venv/lib/libeccodes.so
 
 ENTRYPOINT ["/venv/bin/nwp-consumer-cli"]
 VOLUME /work

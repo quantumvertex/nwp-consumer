@@ -303,6 +303,35 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         """
         return self._download(mr).bind(self._convert)
 
+    def _cleanup_old_files(self, folder: pathlib.Path, max_files: int) -> None:
+        """Delete oldest files in a folder if total count exceeds threshold.
+
+        Args:
+            folder: The folder to clean up
+            max_files: Maximum number of files to keep
+        """
+        try:
+            # List all grib files in the folder
+            files = list(folder.glob("*.grib"))
+
+            # If the number of files exceeds the threshold
+            if len(files) > max_files:
+                # Sort files by modification time (oldest first)
+                files_by_age = sorted(files, key=lambda f: f.stat().st_mtime)
+
+                # Determine how many files to delete
+                files_to_delete = files_by_age[:len(files) - max_files]
+
+                # Delete the oldest files
+                for file_path in files_to_delete:
+                    log.info("Removing old cached file: %s", file_path)
+                    file_path.unlink()
+
+                log.info("Cleaned up %d old files from %s", len(files_to_delete), folder)
+        except Exception as e:
+            # Log the error but don't fail the download operation
+            log.warning("Error during file cleanup: %s", str(e))
+
     def _download(self, mr: _MARSRequest) -> ResultE[pathlib.Path]:
         """Download data from the ECMWF MARS server.
 
@@ -323,7 +352,19 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         if local_path.exists():
             return Success(local_path)
 
-        return mr.execute(server=self.server, folder=local_folder)
+        result = mr.execute(server=self.server, folder=local_folder)
+
+        # Only perform cleanup if MAX_CACHED_FILES is explicitly set
+        max_files_env = os.getenv("MAX_CACHED_FILES")
+        if max_files_env is not None:
+            try:
+                log.info("Checking max cached files")
+                max_files = int(max_files_env)
+                self._cleanup_old_files(local_folder, max_files)
+            except ValueError:
+                log.warning("Invalid MAX_CACHED_FILES value: %s - skipping cleanup", max_files_env)
+
+        return result
 
     @staticmethod
     def _convert(path: pathlib.Path) -> ResultE[list[xr.DataArray]]:

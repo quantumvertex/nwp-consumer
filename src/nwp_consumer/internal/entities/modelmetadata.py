@@ -99,18 +99,40 @@ class ModelMetadata:
         """
         match region:
             case "uk":
-                return self.expected_coordinates.crop(
-                    north=62, west=-12, south=48, east=3,
-                ).map(lambda coords: dataclasses.replace(
-                    self, name=f"{self.name}_uk", expected_coordinates=coords,
-                )).unwrap()
+                return (
+                    self.expected_coordinates.crop(
+                        north=62,
+                        west=-12,
+                        south=48,
+                        east=3,
+                    )
+                    .map(
+                        lambda coords: dataclasses.replace(
+                            self,
+                            name=f"{self.name}_uk",
+                            expected_coordinates=coords,
+                        )
+                    )
+                    .unwrap()
+                )
             case "uk-north60":
                 # same as uk. but north is 60, not 62
-                return self.expected_coordinates.crop(
-                    north=60, west=-12, south=48, east=3,
-                ).map(lambda coords: dataclasses.replace(
-                    self, name=f"{self.name}_uk", expected_coordinates=coords,
-                )).unwrap()
+                return (
+                    self.expected_coordinates.crop(
+                        north=60,
+                        west=-12,
+                        south=48,
+                        east=3,
+                    )
+                    .map(
+                        lambda coords: dataclasses.replace(
+                            self,
+                            name=f"{self.name}_uk",
+                            expected_coordinates=coords,
+                        )
+                    )
+                    .unwrap()
+                )
             case "india":
                 return (
                     self.expected_coordinates.crop(
@@ -163,11 +185,22 @@ class ModelMetadata:
                     .unwrap()
                 )
             case "nl":
-                return self.expected_coordinates.crop(
-                    north=53.8, west=2.8, south=50.6, east=7.7,
-                ).map(lambda coords: dataclasses.replace(
-                    self, name=f"{self.name}_nl", expected_coordinates=coords,
-                )).unwrap()
+                return (
+                    self.expected_coordinates.crop(
+                        north=53.8,
+                        west=2.8,
+                        south=50.6,
+                        east=7.7,
+                    )
+                    .map(
+                        lambda coords: dataclasses.replace(
+                            self,
+                            name=f"{self.name}_nl",
+                            expected_coordinates=coords,
+                        )
+                    )
+                    .unwrap()
+                )
             case _:
                 log.warning(f"Unknown region '{region}', not cropping expected coordinates.")
                 return self
@@ -203,6 +236,7 @@ class ModelMetadata:
             for hour in self.running_hours:
                 its.append(dt.datetime(year, month, day, hour, tzinfo=dt.UTC))
         return its
+
 
 class Models:
     """Namespace containing known models."""
@@ -318,7 +352,7 @@ class Models:
             latitude=[float(f"{lat / 10:.2f}") for lat in range(900, -900 - 1, -1)],
             longitude=[float(f"{lon / 10:.2f}") for lon in range(-1800, 1800 + 1, 1)],
         ),
-		running_hours=[0, 12],
+        running_hours=[0, 12],
     )
     """ECMWF's oper Integrated Forecast System."""
 
@@ -480,9 +514,9 @@ class Models:
                 ],
             ),
             # Taken from iris-grib reading in MetOffice UKV data
-            y_laea=[int(y) for y in np.arange(start=700000, stop=-576000-2000, step=-2000)],
-            x_laea=[int(x) for x in np.arange(start=-576000, stop=332000+2000, step=2000)],
+            y_laea=[int(y) for y in np.arange(start=700000, stop=-576000 - 2000, step=-2000)],
+            x_laea=[int(x) for x in np.arange(start=-576000, stop=332000 + 2000, step=2000)],
         ),
-        running_hours=list(range(0, 24, 3)), # Only first 12 steps available for hourly runs
+        running_hours=list(range(0, 24, 3)),  # Only first 12 steps available for hourly runs
     )
     """MetOffice's Unified Model in the UKV configuration, at a resolution of 2km"""

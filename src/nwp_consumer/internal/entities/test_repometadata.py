@@ -13,8 +13,7 @@ class TestRawRepositoryMetadata(unittest.TestCase):
         name="test",
         is_archive=False,
         is_order_based=False,
-        running_hours=[0, 6, 12, 18],
-        delay_minutes=60,
+        delay_minutes=55,
         required_env=["TEST"],
         optional_env={"TEST": "test"},
         max_connections=1,
@@ -42,11 +41,16 @@ class TestRawRepositoryMetadata(unittest.TestCase):
                 t=dt.datetime(2021, 1, 1, 5, tzinfo=dt.UTC),
                 expected=dt.datetime(2021, 1, 1, 0, tzinfo=dt.UTC),
             ),
+            TestCase(
+                name="returns_to_hours",
+                t=dt.datetime(2021, 1, 1, 6, tzinfo=dt.UTC),
+                expected=dt.datetime(2021, 1, 1, 0, tzinfo=dt.UTC),
+            ),
         ]
 
         for test in tests:
             with self.subTest(name=test.name):
-                result = self.metadata.determine_latest_it_from(test.t)
+                result = self.metadata.determine_latest_it_from(test.t, [0, 6, 12, 18])
                 self.assertEqual(result, test.expected)
 
 

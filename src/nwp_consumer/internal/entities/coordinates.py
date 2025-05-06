@@ -41,6 +41,7 @@ import json
 import logging
 import math
 from importlib.metadata import PackageNotFoundError, version
+from typing import Any
 
 import dask.array
 import numpy as np
@@ -98,6 +99,16 @@ class NWPDimensionCoordinateMap:
     longitude: list[float] | None = None
     """The longitude coordinates of the forecast grid in degrees. """
 
+    y_osgb: list[int] | None = None
+    """Y coordinates of an OSGB grid."""
+    x_osgb: list[int] | None = None
+    """X coordinates of an OSGB grid."""
+
+    y_laea: list[int] | None = None
+    """Y coordinates of a Lambert Azimuthal Equal Area grid."""
+    x_laea: list[int] | None = None
+    """X coordinates of a Lambert Azimuthal Equal Area grid."""
+
     def __post_init__(self) -> None:
         """Rigidly set input value ordering and precision."""
         self.variable = sorted(self.variable)
@@ -130,6 +141,44 @@ class NWPDimensionCoordinateMap:
         axis.
         """
         return {dim: len(getattr(self, dim)) for dim in self.dims}
+
+    @property
+    def coord_system(self) -> dict[str, Any]:
+        """The coordinate system of the map.
+
+        Returns:
+            A string representing the coordinate system of the map.
+        """
+        if self.latitude is not None and self.longitude is not None:
+            return {"geodesic_ellipsiodal": {"crs": "EPSG:4326"}}
+        if self.y_osgb is not None and self.x_osgb is not None:
+            return {
+                "transverse_mercator": {
+                    "latitude_of_projection_origin": 49.0,
+                    "longitude_of_central_meridian": -2.0,
+                    "false_easting": 400000.0,
+                    "false_northing": -100000.0,
+                    "scale_factor_at_central_meridian": 0.0,
+                    "ellipsoid": {
+                        "semi_major_axis": 6377563.4,
+                        "semi_minor_axis": 6356256.91,
+                    },
+                },
+            }
+        if self.y_laea is not None and self.x_laea is not None:
+            return {
+                "lambert_azimuthal_equal_area": {
+                    "latitude_of_projection_origin": 54.9,
+                    "longitude_of_projection_origin": -2.5,
+                    "false_easting": 0.0,
+                    "false_northing": 0.0,
+                    "ellipsoid": {
+                        "semi_major_axis": 6378137.0,
+                        "semi_minor_axis": 6356752.314140356,
+                    },
+                },
+            }
+        return {}
 
     @classmethod
     def from_pandas(
@@ -204,6 +253,34 @@ class NWPDimensionCoordinateMap:
                 "Longitude coordinates should run from -180 -> 180. "
                 "Modify the coordinate in the source data to be in ascending order.",
             ))
+        if "y_osgb" in pd_indexes \
+            and pd_indexes["y_osgb"].values[0] < pd_indexes["y_osgb"].values[-1]:
+            return Failure(ValueError(
+                "Cannot create NWPDimensionCoordinateMap instance from pandas indexes "
+                "as the y_osgb values are not in descending order. "
+                "Modify the coordinate in the source data to be in descending order.",
+            ))
+        if "x_osgb" in pd_indexes \
+            and pd_indexes["x_osgb"].values[0] > pd_indexes["x_osgb"].values[-1]:
+            return Failure(ValueError(
+                "Cannot create NWPDimensionCoordinateMap instance from pandas indexes "
+                "as the x_osgb values are not in ascending order. "
+                "Modify the coordinate in the source data to be in ascending order.",
+            ))
+        if "y_laea" in pd_indexes \
+            and pd_indexes["y_laea"].values[0] < pd_indexes["y_laea"].values[-1]:
+            return Failure(ValueError(
+                "Cannot create NWPDimensionCoordinateMap instance from pandas indexes "
+                "as the y_laea values are not in descending order. "
+                "Modify the coordinate in the source data to be in descending order.",
+            ))
+        if "x_laea" in pd_indexes \
+            and pd_indexes["x_laea"].values[0] > pd_indexes["x_laea"].values[-1]:
+            return Failure(ValueError(
+                "Cannot create NWPDimensionCoordinateMap instance from pandas indexes "
+                "as the x_laea values are not in ascending order. "
+                "Modify the coordinate in the source data to be in ascending order.",
+            ))
 
         # Convert the pandas Index objects to lists of the appropriate types
         return Success(
@@ -231,6 +308,14 @@ class NWPDimensionCoordinateMap:
                     if "latitude" in pd_indexes else None,
                 longitude=pd_indexes["longitude"].to_list() \
                     if "longitude" in pd_indexes else None,
+                y_osgb=pd_indexes["y_osgb"].to_list() \
+                    if "y_osgb" in pd_indexes else None,
+                x_osgb=pd_indexes["x_osgb"].to_list() \
+                    if "x_osgb" in pd_indexes else None,
+                y_laea=pd_indexes["y_laea"].to_list() \
+                    if "y_laea" in pd_indexes else None,
+                x_laea=pd_indexes["x_laea"].to_list() \
+                    if "x_laea" in pd_indexes else None,
             ),
         )
 
@@ -380,12 +465,6 @@ class NWPDimensionCoordinateMap:
             contiguous_index_run = list(range(outer_dim_indices[0], outer_dim_indices[-1] + 1))
             if outer_dim_indices != contiguous_index_run:
                 idxs = np.argwhere(np.gradient(outer_dim_indices) > 1).flatten()
-                # TODO: Sometimes, providers send their data in multiple files, the area
-                # TODO: of which might loop around the edges of the grid. In this case, it would
-                # TODO: be useful to determine if the run is non-contiguous only in that it wraps
-                # TODO: around that boundary, and in that case, split it and write it in two goes.
-                # TODO: 2025-01-06: I think this is a resolved problem now that fetch_init_data
-                # can return a list of DataArrays.
                 return Failure(
                     ValueError(
                         f"Coordinate values for dimension '{inner_dim_label}' do not correspond "
@@ -464,6 +543,7 @@ class NWPDimensionCoordinateMap:
                     "units": p.metadata().units,
                 } for p in self.variable
             }),
+            "coord_system": json.dumps(self.coord_system),
         }
         # Create a DataArray object with the given coordinates and dummy values
         da: xr.DataArray = xr.DataArray(

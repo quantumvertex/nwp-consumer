@@ -55,7 +55,6 @@ class NOAAS3RawRepository(ports.RawRepository):
             name="NOAA-GFS-S3",
             is_archive=False,
             is_order_based=False,
-            running_hours=[0, 6, 12, 18],
             delay_minutes=(60 * 5),  # 5 hours
             max_connections=100,
             required_env=[],
@@ -249,6 +248,7 @@ class NOAAS3RawRepository(ports.RawRepository):
             ))
 
         try:
+            ds = ds.drop_vars("sdwe", errors="ignore") # Datasets contain both SDWE and SD
             ds = entities.Parameter.rename_else_drop_ds_vars(
                 ds=ds,
                 allowed_parameters=NOAAS3RawRepository.model().expected_coordinates.variable,

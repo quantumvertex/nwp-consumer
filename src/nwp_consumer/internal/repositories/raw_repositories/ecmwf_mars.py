@@ -212,7 +212,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             is_archive=True,
             is_order_based=False,
             delay_minutes=(60 * 26),  # 1 day, plus leeway
-            max_connections=2,
+            max_connections=1,
             required_env=[
                 "ECMWF_API_KEY",
                 "ECMWF_API_EMAIL",
@@ -226,6 +226,8 @@ class ECMWFMARSRawRepository(ports.RawRepository):
                 "hres-ifs-india": entities.Models.ECMWF_HRES_IFS_0P1DEGREE.with_region("india"),
                 "hres-ifs-oper": entities.Models.ECMWF_OPER_IFS_0P1DEGREE.with_region(
                     "oper-europe",
+                ).with_chunk_count_overrides(
+                    {"init_time": 31, "step": 52, "latitude": 50, "longitude": 50},
                 ),
                 "hres-ifs-west-europe": entities.Models.ECMWF_HRES_IFS_0P1DEGREE.with_region(
                     "west-europe",
@@ -373,7 +375,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         try:
             dss: list[xr.Dataset] = cfgrib.open_datasets(
                 path=path.as_posix(),
-                chunks={"time": 1, "step": -1, "longitude": "auto", "latitude": "auto"},
+                # chunks={"time": 1, "step": -1, "longitude": "auto", "latitude": "auto"}, # Commented out to avoid chunking issues raised by dask since it is not consistent with the chunking defined in the model metadata
                 backend_kwargs={"indexpath": ""},
             )
         except Exception as e:

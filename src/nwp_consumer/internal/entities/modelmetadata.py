@@ -267,8 +267,8 @@ class Models:
                 Parameter.DIRECT_SHORTWAVE_RADIATION_FLUX_GL,
                 Parameter.DOWNWARD_ULTRAVIOLET_RADIATION_FLUX_GL,
             ],
-            latitude=[float(f"{lat / 10:.2f}") for lat in range(900, -900 - 1, -1)],
-            longitude=[float(f"{lon / 10:.2f}") for lon in range(-1800, 1800 + 1, 1)],
+            latitude=[np.float32(f"{lat / 10:.2f}") for lat in range(900, -900 - 1, -1)],
+            longitude=[np.float32(f"{lon / 10:.2f}") for lon in range(-1800, 1800 + 1, 1)],
         ),
         running_hours=[0, 6, 12, 18],
     )
@@ -287,8 +287,8 @@ class Models:
                 Parameter.TEMPERATURE_SL,
             ],
             ensemble_stat=["mean", "std", "P10", "P25", "P75", "P90"],
-            latitude=[v / 10 for v in range(900, -900, -1)],
-            longitude=[v / 10 for v in range(-1800, 1800, 1)],
+            latitude=[np.float32(v / 10) for v in range(900, -900, -1)],
+            longitude=[np.float32(v / 10) for v in range(-1800, 1800, 1)],
         ),
         running_hours=[0, 12],
     )
@@ -316,8 +316,8 @@ class Models:
                 # Parameter.TOTAL_PRECIPITATION_RATE_GL,
             ],
             ensemble_member=list(range(1, 51)),
-            latitude=[v / 10 for v in range(900, -900, -1)],
-            longitude=[v / 10 for v in range(-1800, 1800, 1)],
+            latitude=[np.float32(v / 10) for v in range(900, -900, -1)],
+            longitude=[np.float32(v / 10) for v in range(-1800, 1800, 1)],
         ),
         running_hours=[0, 6, 12, 18],
     )
@@ -349,8 +349,8 @@ class Models:
                 Parameter.DIRECT_SHORTWAVE_RADIATION_FLUX_GL,
                 Parameter.DOWNWARD_ULTRAVIOLET_RADIATION_FLUX_GL,
             ],
-            latitude=[float(f"{lat / 10:.2f}") for lat in range(900, -900 - 1, -1)],
-            longitude=[float(f"{lon / 10:.2f}") for lon in range(-1800, 1800 + 1, 1)],
+            latitude=[np.float32(f"{lat / 10:.2f}") for lat in range(900, -900 - 1, -1)],
+            longitude=[np.float32(f"{lon / 10:.2f}") for lon in range(-1800, 1800 + 1, 1)],
         ),
         running_hours=[0, 12],
     )
@@ -381,8 +381,8 @@ class Models:
                     Parameter.WIND_V_COMPONENT_100m,
                 ],
             ),
-            latitude=[float(lat) for lat in range(90, -90 - 1, -1)],
-            longitude=[float(lon) for lon in range(-180, 180 + 1, 1)],
+            latitude=[np.float32(lat) for lat in range(90, -90 - 1, -1)],
+            longitude=[np.float32(lon) for lon in range(-180, 180 + 1, 1)],
         ),
         running_hours=[0, 6, 12, 18],
     )
@@ -407,9 +407,11 @@ class Models:
                 Parameter.WIND_V_COMPONENT_10m,
                 Parameter.VISIBILITY_SL,
             ],
-            latitude=[float(f"{lat:.4f}") for lat in np.arange(89.856, -89.856 - 0.156, -0.156)],
+            latitude=[
+                np.float32(f"{lat:.4f}") for lat in np.arange(89.856, -89.856 - 0.156, -0.156)
+            ],
             longitude=[
-                float(f"{lon:.4f}")
+                np.float32(f"{lon:.4f}")
                 for lon in np.concatenate(
                     [
                         np.arange(-45, 45, 0.234),
@@ -447,10 +449,11 @@ class Models:
                 ],
             ),
             latitude=[
-                float(f"{lat:.4f}") for lat in np.arange(89.953125, -89.953125 - 0.09375, -0.09375)
+                np.float32(f"{lat:.4f}")
+                for lat in np.arange(89.953125, -89.953125 - 0.09375, -0.09375)
             ],
             longitude=[
-                float(f"{lon:.4f}")
+                np.float32(f"{lon:.4f}")
                 for lon in np.arange(-179.929687, 179.929688 + 0.140625, 0.140625)
             ],
         ),

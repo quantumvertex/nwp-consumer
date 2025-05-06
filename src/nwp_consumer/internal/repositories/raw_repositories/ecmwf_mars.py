@@ -227,17 +227,14 @@ class ECMWFMARSRawRepository(ports.RawRepository):
                 "hres-ifs-oper": entities.Models.ECMWF_OPER_IFS_0P1DEGREE.with_region(
                     "oper-europe",
                 ),
-                "hres-ifs-test": entities.Models.ECMWF_TEST_IFS_0P1DEGREE.with_region(
-                    "test-europe",
-                ),
                 "hres-ifs-west-europe": entities.Models.ECMWF_HRES_IFS_0P1DEGREE.with_region(
                     "west-europe",
                 ),
                 "ens-stat-india": entities.Models.ECMWF_ENS_STAT_0P1DEGREE.with_region("india"),
                 "ens-stat-uk": entities.Models.ECMWF_ENS_STAT_0P1DEGREE.with_region("uk"),
-                "ens-uk": entities.Models.ECMWF_ENS_0P1DEGREE\
-                    .with_region("uk")\
-                    .with_chunk_count_overrides({"latitude": 1, "longitude": 1}),
+                "ens-uk": entities.Models.ECMWF_ENS_0P1DEGREE.with_region(
+                    "uk"
+                ).with_chunk_count_overrides({"latitude": 1, "longitude": 1}),
             },
         )
 
@@ -319,7 +316,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
                 files_by_age = sorted(files, key=lambda f: f.stat().st_mtime)
 
                 # Determine how many files to delete
-                files_to_delete = files_by_age[:len(files) - max_files]
+                files_to_delete = files_by_age[: len(files) - max_files]
 
                 # Delete the oldest files
                 for file_path in files_to_delete:

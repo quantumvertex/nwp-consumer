@@ -233,7 +233,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
                 "ens-stat-india": entities.Models.ECMWF_ENS_STAT_0P1DEGREE.with_region("india"),
                 "ens-stat-uk": entities.Models.ECMWF_ENS_STAT_0P1DEGREE.with_region("uk"),
                 "ens-uk": entities.Models.ECMWF_ENS_0P1DEGREE.with_region(
-                    "uk"
+                    "uk",
                 ).with_chunk_count_overrides({"latitude": 1, "longitude": 1}),
             },
         )

@@ -111,7 +111,7 @@ class ModelMetadata:
                             self,
                             name=f"{self.name}_uk",
                             expected_coordinates=coords,
-                        )
+                        ),
                     )
                     .unwrap()
                 )
@@ -129,7 +129,7 @@ class ModelMetadata:
                             self,
                             name=f"{self.name}_uk",
                             expected_coordinates=coords,
-                        )
+                        ),
                     )
                     .unwrap()
                 )
@@ -197,7 +197,7 @@ class ModelMetadata:
                             self,
                             name=f"{self.name}_nl",
                             expected_coordinates=coords,
-                        )
+                        ),
                     )
                     .unwrap()
                 )

@@ -89,7 +89,7 @@ class ConsumerService(ports.ConsumeUseCase):
                 OSError(
                     "Error threshold exceeded: "
                     f"{len(failures)} errors (>0) occurred during processing.",
-                )
+                ),
             )
         else:
             return Success(sum(successes))
@@ -201,7 +201,7 @@ class ConsumerService(ports.ConsumeUseCase):
                 return Failure(
                     OSError(
                         f"Failed to initialize store for init time: {init_store_result!s}",
-                    )
+                    ),
                 )
             store = init_store_result.unwrap()
 
@@ -247,6 +247,7 @@ class ConsumerService(ports.ConsumeUseCase):
                     )
                 return validation_result
 
+        log.debug("Store created successfully and notification to be sent")
         notification_message = entities.StoreCreatedNotification(
             filename=pathlib.Path(store.path).name,
             size_mb=store.size_kb // 1024,
@@ -256,6 +257,7 @@ class ConsumerService(ports.ConsumeUseCase):
             ),
         )
         notify_result = self.nr.notify(message=notification_message)
+        log.debug("Notification sent")
         if isinstance(notify_result, Failure):
             log.error(
                 "Failed to notify of store creation: "

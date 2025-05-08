@@ -212,7 +212,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
             is_archive=True,
             is_order_based=False,
             delay_minutes=(60 * 26),  # 1 day, plus leeway
-            max_connections=1,
+            max_connections=2,
             required_env=[
                 "ECMWF_API_KEY",
                 "ECMWF_API_EMAIL",
@@ -227,7 +227,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
                 "hres-ifs-oper": entities.Models.ECMWF_OPER_IFS_0P1DEGREE.with_region(
                     "oper-europe",
                 ).with_chunk_count_overrides(
-                    {"init_time": 31, "step": 52, "latitude": 50, "longitude": 50},
+                    {"init_time": 1, "step": 31, "latitude": -1, "longitude": -1},
                 ),
                 "hres-ifs-west-europe": entities.Models.ECMWF_HRES_IFS_0P1DEGREE.with_region(
                     "west-europe",

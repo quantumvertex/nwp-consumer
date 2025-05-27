@@ -375,7 +375,7 @@ class ECMWFMARSRawRepository(ports.RawRepository):
         try:
             dss: list[xr.Dataset] = cfgrib.open_datasets(
                 path=path.as_posix(),
-                # chunks={"time": 1, "step": -1, "longitude": "auto", "latitude": "auto"}, # Commented out to avoid chunking issues raised by dask since it is not consistent with the chunking defined in the model metadata
+                # chunks={"time": 1, "step": -1, "longitude": -1, "latitude": -1}, # Commented out to avoid chunking issues raised by dask since it is not consistent with the chunking defined in the model metadata
                 backend_kwargs={"indexpath": ""},
             )
         except Exception as e:
